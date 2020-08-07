@@ -124,8 +124,16 @@
         max-width: 100vw;
     }
 
+    #page-give-classes main{
+        max-width: 90rem;
+    }
+
     #page-give-classes .page-header .header-content {
         margin-bottom: 0;
+    }
+
+    .page-header .header-content strong {
+        font-size: 3.2rem;
     }
 
     #page-give-classes main fieldset {
@@ -139,8 +147,22 @@
 
     }
 
-    .schedule-item .input-block {
+    #page-give-classes #schedule-itens .select-block+.input-block,
+    #page-give-classes #schedule-itens .input-block+.input-block{
+        margin-top: 0 !important;
+    }
+
+    #page-give-classes main footer {
+        padding: 40px 64px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #page-give-classes main footer button {
         margin-top: 0;
+        width: 200px;
     }
 
 
