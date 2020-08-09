@@ -1,16 +1,12 @@
-require('express')()
+const express = require('express')
+const server = express()
+
+server.use(express.static("public"))
 .get("/", (requisicao, resposta) => {
-    return resposta.send("Hi from server");
+    return resposta.sendFile(__dirname + "/views/index.html");
 })
 .get("/study", (requisicao, resposta) => {
-    return resposta.send("Página study");
+    return resposta.send("study");
 })
 .listen(8080)
 
-function express(){
-    return{
-        name: "Rubens",
-    }
-}
-
-express();
