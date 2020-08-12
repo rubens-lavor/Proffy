@@ -42,13 +42,13 @@
                             <option value="" disabled="" hidden="">Selecione uma opção</option>
 
                             {% for subject in subjects %}
-                            
-                                <option value="{{loop.index}}" {{"selected" if filters.     subject == loop.index}}>
-                                    {{subject}}
-                                </option>
+
+                            <option value="{{loop.index}}" {{"selected" if filters.     subject == loop.index}}>
+                                {{subject}}
+                            </option>
 
                             {%endfor%}
-                            
+
                         </select>
                     </div>
 
@@ -61,9 +61,9 @@
                             <option value="" disabled="" hidden="">Selecione uma opção</option>
 
                             {% for weekday in weekdays %}
-                                <option value="{{loop.index0}}" {{"selected" if filters.     weekday == loop.index0}}>
-                                    {{weekday}}
-                                </option>
+                            <option value="{{loop.index0}}" {{"selected" if filters.     weekday == loop.index0}}>
+                                {{weekday}}
+                            </option>
                             {%endfor%}
 
                         </select>
@@ -83,9 +83,14 @@
 
         <main>
 
-            {%for proffy in proffys %}
+            {% if proffys == "" %}
+                <p class="no-results">Nenhum professor encontrado com sua pesquisa</p>
 
-            <article class="teacher-item">
+            {% else %}
+
+                {%for proffy in proffys %}
+
+                <article class="teacher-item">
                 <header>
                     <img src="{{proffy.avatar}}" alt="{{proffy.name}}">
                     <div>
@@ -105,11 +110,11 @@
                         Entrar em contato
                     </a>
                 </footer>
-            </article>
+                </article>
 
-            {% endfor %}
+                {% endfor %}
 
-
+            {% endif %}
 
             <!--<article class="teacher-item">
                 <header>

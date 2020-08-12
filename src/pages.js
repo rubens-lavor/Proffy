@@ -1,16 +1,19 @@
 const DataBase = require('./database/db');
 
-const { subjects, weekday, getSubject } = require('./utils/format');
+const { subjects, weekdays, getSubject, convertHoursToMinutes } = require('./utils/format');
+
+
 
 function pageLanding(req, resposta) {
     return resposta.render("index.html");
 }
 
-function pageStudy(req, resposta) {
+async function pageStudy(req, resposta) {
     const filters = req.query;
-    //console.log(filters); ---> { subject: '2', weekday: '0', time: '09:00' }
+    //console.log(filters); ---> { subject: '2', weekdays: '0', time: '09:00' }
     // as propredades que filters pode acessar
 
+    //console.log(filters.weekday);
     if(!filters.subject || !filters.weekday || !filters.time){
         
         return resposta.render("study.html", { filters, subjects, weekdays });
@@ -18,6 +21,7 @@ function pageStudy(req, resposta) {
     }
 
     //converter horas em minutos
+    const timeToMinutes = convertHoursToMinutes(filters.time);
 
     const query = `
         SELECT classes.*,proffys.*
@@ -28,29 +32,79 @@ function pageStudy(req, resposta) {
             FROM class_schedule
             WHERE class_schedule.class_id = classes.id
             AND class_schedule.weekday = ${filters.weekday}
-            AND class_schedule.time_from <= ${filters.time}
-            AND class_schedule.time_to > ${filters.time}
+            AND class_schedule.time_from <= ${timeToMinutes}
+            AND class_schedule.time_to > ${timeToMinutes}
         )
+        AND classes.subject = '${filters.subject}'
     `
+
+    //caso hava erro na hora da consulta do banco de dados
+    try {
+        const db = await DataBase;
+        const proffys = await db.all(query);
+
+        proffys.map((proffy)=> {
+            proffy.subject = getSubject(proffy.subject)
+        })
+
+        return resposta.render('study.html', { proffys, subjects, filters, weekdays})
+    }catch (error) {
+        console.log(error)
+    }
 
 }
 
 
 function pageGiveClasses(req, resposta) {
-    const data = req.query;
-    //adicionar dados a lista de proffys (se houver dados)
 
-    const isNotEmpty = Object.keys(data).length > 0
-    // transforma um objeto num array e está verificando seu tamanho
-    if (isNotEmpty) {
-
-        data.subject = getSubject(data.subject);
-
-        proffys.push(data);
-        return resposta.redirect("/study");
-    }
 
     return resposta.render("give-classes.html", { subjects, weekdays });
+
+
 }
 
-module.exports = { pageLanding, pageStudy, pageGiveClasses }
+async function saveClasses(req, resposta){
+
+    const createProffy = require('./database/createProffy')
+    
+    const proffyValue = {
+        name: req.body.name,
+        avatar: req.body.avatar,
+        whatsapp: req.body.whatsapp,
+        bio: req.body.bio
+    }
+
+    const classValue = {
+        subject: req.body.subject,
+        cost: req.body.cost
+    }
+
+    const classScheduleValues = req.body.weekday.map((weekday, index) => {
+
+        return {
+            weekday: weekday,
+            time_from: convertHoursToMinutes(req.body.time_from[index]),
+            time_to: convertHoursToMinutes(req.body.time_to[index])
+        }
+    });
+
+    try {
+        
+        const db = await DataBase;
+        await createProffy(db, { proffyValue, classValue, classScheduleValues })
+
+        let queryString = "?subject" + req.body.subject;
+        queryString += "&weekday" + req.body.weekday[0];
+        queryString += "&time" + req.body.time_from[0];
+
+        return resposta.redirect("/study" + queryString);
+
+    }catch (error){
+        console.log(error)
+    }
+
+    
+
+}
+
+module.exports = { pageLanding, pageStudy, pageGiveClasses, saveClasses }
